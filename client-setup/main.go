@@ -8,7 +8,14 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"sync"
 )
+
+type tools struct {
+	cfssl     string
+	cfssljson string
+	kubectl   string
+}
 
 func main() {
 	arch := runtime.GOARCH
@@ -19,32 +26,54 @@ func main() {
 		log.Fatal(err)
 	}
 
+	cfsslURL := "https://pkg.cfssl.org/R1.2/cfssl_" + platform + "-" + arch
+	cfsslJSONURL := "https://pkg.cfssl.org/R1.2/cfssljson_" + platform + "-" + arch
+	kubectlVersion := "1.18.0"
+	kubectlURL := "https://storage.googleapis.com/kubernetes-release/release/v" + kubectlVersion + "/bin/" + platform + "/" + arch + "/kubectl"
+
+	t := tools{
+		cfsslURL,
+		cfsslJSONURL,
+		kubectlURL,
+	}
+
+	var wg sync.WaitGroup
+
 	out, err := exec.Command("cfssl", "version").Output()
 	if err != nil {
-		cfsslURL := "https://pkg.cfssl.org/R1.2/cfssl_" + platform + "-" + arch
-		fmt.Printf("Download and install cfssl:-\n%s\n", cfsslURL)
-		downloadAsFile(usrHOMEDir+"/cfssl", cfsslURL)
-		makeFileExecutable(usrHOMEDir+"/cfssl", "cfssl")
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fmt.Printf("Download and install cfssl:-\n%s\n", t.cfssl)
+			downloadAsFile(usrHOMEDir+"/cfssl", t.cfssl)
+			makeFileExecutable(usrHOMEDir+"/cfssl", "cfssl")
+		}()
 	}
 	fmt.Println(string(out))
 
 	out, err = exec.Command("cfssljson", "version").Output()
 	if err != nil {
-		cfsslJSONURL := "https://pkg.cfssl.org/R1.2/cfssljson_" + platform + "-" + arch
-		fmt.Printf("Download and install cfssl:-\n%s\n", cfsslJSONURL)
-		downloadAsFile(usrHOMEDir+"/cfssljson", cfsslJSONURL)
-		makeFileExecutable(usrHOMEDir+"/cfssljson", "cfssljson")
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fmt.Printf("Download and install cfssljson:-\n%s\n", t.cfssljson)
+			downloadAsFile(usrHOMEDir+"/cfssljson", t.cfssljson)
+			makeFileExecutable(usrHOMEDir+"/cfssljson", "cfssljson")
+		}()
 	}
 	fmt.Println(string(out))
 
-	out, err = exec.Command("kubectl", "version", "--client").Output()
+	out, err = exec.Command("kubectl", "version", "--client", "--short").Output()
 	if err != nil {
-		kubectlVersion := "1.18.0"
-		kubectlURL := "https://storage.googleapis.com/kubernetes-release/release/v" + kubectlVersion + "/bin/" + platform + "/" + arch + "/kubectl"
-		fmt.Printf("Download and install cfssl:-\n%s\n", kubectlURL)
-		downloadAsFile(usrHOMEDir+"/kubectl", kubectlURL)
-		makeFileExecutable(usrHOMEDir+"/kubectl", "kubectl")
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fmt.Printf("Download and install kubectl:-\n%s\n", t.kubectl)
+			downloadAsFile(usrHOMEDir+"/kubectl", t.kubectl)
+			makeFileExecutable(usrHOMEDir+"/kubectl", "kubectl")
+		}()
 	}
+	wg.Wait()
 	fmt.Println(string(out))
 }
 
@@ -80,9 +109,6 @@ func makeFileExecutable(filepath, fileName string) (err error) {
 	}
 
 	installDir := "/usr/local/bin/" + fileName
-	if runtime.GOOS == "darwin" {
-		installDir = "/usr/local/Cellar/" + fileName
-	}
 	_, err = exec.Command("sudo", "mv", filepath, installDir).Output()
 	if err != nil {
 		fmt.Printf("%s\n", err)
