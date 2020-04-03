@@ -8,6 +8,7 @@ IP_NW = "192.168.5."
 MASTER_IP_START = 10
 NODE_IP_START = 20
 LB_IP_START = 30
+PUPPET_MASTER = 40
 #
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
@@ -78,6 +79,23 @@ Vagrant.configure("2") do |config|
   #   apt-get install -y apache2
   # SHELL
 
+  # Provision Puppet Server (Master)
+  config.vm.define "puppet-master" do |node|
+    node.vm.provider "virtualbox" do |vb|
+      vb.name = "puppet-master"
+      vb.memory = 2048
+      vb.cpus = 2
+    end
+    node.vm.hostname = "puppet-master"
+    node.vm.network :private_network, ip: IP_NW + "#{PUPPET_MASTER}"
+    node.vm.network "forwarded_port", guest: 22, host: 2740
+    node.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/setup-hosts.sh" do |s|
+      s.args = ["enp0s8"]
+    end
+    node.vm.provision "setup-dns", type: "shell", :path => "ubuntu/update-dns.sh"
+    node.vm.provision "setup-puppet-server", type: "shell", :path => "ubuntu/install-puppet-server.sh"
+  end
+
   # Provision Master Nodes
   (1..NUM_MASTER_NODES).each do |i|
     config.vm.define "master-#{i}" do |node|
@@ -93,6 +111,7 @@ Vagrant.configure("2") do |config|
         s.args = ["enp0s8"]
       end
       node.vm.provision "setup-dns", type: "shell", :path => "ubuntu/update-dns.sh"
+      node.vm.provision "setup-puppet-agent", type: "shell", :path => "ubuntu/install-puppet-agent.sh"
     end
   end
 
@@ -112,6 +131,7 @@ Vagrant.configure("2") do |config|
       node.vm.provision "setup-dns", type: "shell", :path => "ubuntu/update-dns.sh"
       node.vm.provision "install-docker", type: "shell", :path => "ubuntu/install-docker.sh"
       node.vm.provision "allow-bridge-nf-traffic", :type => "shell", :path => "ubuntu/allow-bridge-nf-traffic.sh"
+      node.vm.provision "setup-puppet-agent", type: "shell", :path => "ubuntu/install-puppet-agent.sh"
     end
   end
 
@@ -128,6 +148,6 @@ Vagrant.configure("2") do |config|
       s.args = ["enp0s8"]
     end
     node.vm.provision "setup-dns", type: "shell", :path => "ubuntu/update-dns.sh"
+    node.vm.provision "setup-puppet-agent", type: "shell", :path => "ubuntu/install-puppet-agent.sh"
   end
-
 end
