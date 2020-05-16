@@ -1,4 +1,6 @@
-# A list of real-world tasks to for DevOps and CKA skills
+# A list of real-world DevOps tasks
+
+_Practice Before attempting CKA_
 
 1. **Task: Statefulset**
 
