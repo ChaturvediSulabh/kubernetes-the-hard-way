@@ -1,8 +1,8 @@
 # A list of real-world tasks to for DevOps and CKA skills
 
-1. Task: Statefulset
+1. **Task: Statefulset**
 
-   **Description**: we need to spun-up a MySQL Database cluster on Kubernetes. The DB must be highly available and should have a persistent storage. Once done, Share the DB Endpoint.
+   _Description_: we need to spun-up a MySQL Database cluster on Kubernetes. The DB must be highly available and should have a persistent storage. Once done, Share the DB Endpoint.
 
    - [Set-up NFS server on a dedicated node](./ubuntu/nfs-mount.sh)
 
