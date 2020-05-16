@@ -11,5 +11,6 @@
      > [ERROR: mount: wrong fs type, bad option, bad superblock on xx.xx.xx.xx:/nfs, missing codepage or helper program, or other error (for several filesystems (e.g. nfs, cifs) you might need a /sbin/mount.\<type\> helper program)](https://github.com/rancher/rancher/issues/4423)
 
    - [Provision a Persistent Volume that serves as an nfs-client](./tasks/statefulset/pv-mysql.yaml)
+   - [Mysql config for master and slave](./tasks/statefulset/cm-mysql.yaml)
    - [Create a Service for the statefulset](./tasks/statefulset/svc-mysql.yaml)
    - [Deploy A High available and stateful MySQL Application](./tasks/statefulset/statefulset-mysql.yaml)
