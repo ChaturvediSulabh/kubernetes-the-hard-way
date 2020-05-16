@@ -9,6 +9,7 @@ MASTER_IP_START = 10
 NODE_IP_START = 20
 LB_IP_START = 30
 PUPPET_MASTER = 40
+NFS = 50
 #
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
@@ -148,6 +149,19 @@ Vagrant.configure("2") do |config|
       s.args = ["enp0s8"]
     end
     node.vm.provision "setup-dns", type: "shell", :path => "ubuntu/update-dns.sh"
+    node.vm.provision "setup-puppet-agent", type: "shell", :path => "ubuntu/install-puppet-agent.sh"
+  end
+
+  config.vm.define "nfs-server" do |node|
+    node.vm.provider "virtualbox" do |vb|
+      vb.name = "nfs-server"
+      vb.memory = 2048
+      vb.cpus = 2
+    end
+    node.vm.hostname = "nfs-server"
+    node.vm.network :private_network, ip: IP_NW + "#{NFS}"
+    node.vm.network "forwarded_port", guest: 22, host: 2750
+    node.vm.provision "setup-nfs-server", :type => "shell", :path => "ubuntu/nfs-mount.sh"
     node.vm.provision "setup-puppet-agent", type: "shell", :path => "ubuntu/install-puppet-agent.sh"
   end
 end
