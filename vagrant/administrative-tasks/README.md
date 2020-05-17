@@ -16,3 +16,17 @@ _Practice Before attempting CKA_
    - [Mysql config for master and slave](./tasks/statefulset/cm-mysql.yaml)
    - [Create a Service for the statefulset](./tasks/statefulset/svc-mysql.yaml)
    - [Deploy A High available and stateful MySQL Application](./tasks/statefulset/statefulset-mysql.yaml)
+
+2. **Task: Horizontal Pod Autoscaler**
+
+   _Description_: We need to autoscale the deployments based upon the CPU usage across all the pods. Ensure Average CPU utilization of 70% across all the pods.
+
+   - [Create nginx deployment with CPU limit of 700m and CPU requests of 300m](./tasks/hpa/ngx-deploy.yaml)
+   - [Expose nginx deployment](./tasks/hpa/ngx-svc.yaml)
+   - [Create a horizontal pod autoscaler](./tasks/hpa/ngx-autoscaler.yaml)
+     > Note: You must have metrics-server up and running else hpa won't work.
+     > `kubectl get hpa`
+   - [Increase the Load](./tasks/hpa/busybox.yaml)
+     `kubectl get hpa`
+   - [Decrease the load](`kubectl delete pod busybox`)
+     `kubectl get hpa`
